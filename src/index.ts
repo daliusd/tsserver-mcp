@@ -18,8 +18,10 @@ import { getConfigManager } from './config/manager.js';
 class TSServerMCP {
   private server: Server;
   private tsClient: TSServerClient;
+  private transport: StdioServerTransport | null = null;
   private logger = getLogger();
   private configManager = getConfigManager();
+  private connectionLost = false;
 
   constructor() {
     this.server = new Server(
@@ -299,15 +301,77 @@ class TSServerMCP {
     
     await this.tsClient.start();
 
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
+    this.transport = new StdioServerTransport();
+    
+    // Monitor stdin/stdout for connection state
+    this.setupConnectionMonitoring();
+    
+    await this.server.connect(this.transport);
 
     console.error('TSServer MCP started');
     this.logger.info('TSServer MCP started successfully');
   }
 
+  private setupConnectionMonitoring() {
+    // Monitor stdin for close/end events (client disconnection)
+    process.stdin.on('close', () => {
+      this.logger.info('stdin closed - client disconnected');
+      this.handleConnectionLoss();
+    });
+
+    process.stdin.on('end', () => {
+      this.logger.info('stdin ended - client disconnected');
+      this.handleConnectionLoss();
+    });
+
+    process.stdin.on('error', (error) => {
+      this.logger.warn('stdin error', { error: error.message });
+      this.handleConnectionLoss();
+    });
+
+    // Monitor stdout for errors (broken pipe, etc.)
+    process.stdout.on('error', (error) => {
+      this.logger.warn('stdout error', { error: error.message });
+      this.handleConnectionLoss();
+    });
+  }
+
+  private handleConnectionLoss() {
+    if (this.connectionLost) {
+      return; // Already handling connection loss
+    }
+    
+    this.connectionLost = true;
+    this.logger.info('Connection lost - initiating graceful shutdown');
+    
+    // Give a brief moment for any final cleanup, then shutdown
+    setTimeout(async () => {
+      try {
+        await this.stop();
+        this.logger.info('Auto-shutdown completed successfully');
+        process.exit(0);
+      } catch (error) {
+        this.logger.error('Error during auto-shutdown', { error });
+        process.exit(1);
+      }
+    }, 1000); // 1 second delay for graceful cleanup
+  }
+
   async stop() {
     this.logger.info('Stopping TSServer MCP');
+    
+    // Close the transport connection
+    if (this.transport) {
+      try {
+        await this.transport.close();
+        this.logger.debug('Transport closed successfully');
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.error('Error closing transport', { error: errorMessage });
+      }
+      this.transport = null;
+    }
+    
     await this.tsClient.stop();
     this.logger.info('TSServer MCP stopped');
   }
@@ -344,6 +408,7 @@ async function main() {
 
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGPIPE', () => shutdown('SIGPIPE'));
   
   // Handle process disconnection (when parent process exits)
   process.on('disconnect', () => shutdown('disconnect'));
