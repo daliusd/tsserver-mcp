@@ -316,21 +316,27 @@ class TSServerMCP {
 async function main() {
   const mcp = new TSServerMCP();
   let isShuttingDown = false;
+  const logger = getLogger();
 
   const shutdown = async (signal: string) => {
     if (isShuttingDown) {
+      logger.warn('Force shutdown initiated', { signal });
       console.error('Force shutdown');
       process.exit(1);
     }
     
     isShuttingDown = true;
+    logger.info('Shutdown initiated', { signal });
     console.error(`Received ${signal}, shutting down...`);
     
     try {
       await mcp.stop();
+      logger.info('Shutdown completed successfully', { signal });
       console.error('Shutdown complete');
       process.exit(0);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error('Error during shutdown', { signal, error: errorMessage });
       console.error('Error during shutdown:', error);
       process.exit(1);
     }
@@ -344,11 +350,13 @@ async function main() {
   
   // Handle uncaught exceptions to ensure cleanup
   process.on('uncaughtException', async (error) => {
+    logger.error('Uncaught exception occurred', { error: error.message, stack: error.stack });
     console.error('Uncaught exception:', error);
     await shutdown('uncaughtException');
   });
 
   process.on('unhandledRejection', async (reason) => {
+    logger.error('Unhandled rejection occurred', { reason: String(reason) });
     console.error('Unhandled rejection:', reason);
     await shutdown('unhandledRejection');
   });
