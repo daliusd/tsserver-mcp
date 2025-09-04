@@ -9,6 +9,57 @@ A Model Context Protocol (MCP) server that provides TypeScript language features
 - **Diagnostics**: Get syntactic and semantic errors/warnings
 - **Refactoring**: Rename symbols, organize imports
 
+## Installation
+
+### From Source
+
+```bash
+git clone git@github.com:daliusd/tsserver-mcp.git
+cd tsserver-mcp
+npm install
+npm run build
+```
+
+## Usage
+
+### Adding to opencode Config
+
+Add this MCP to your opencode configuration:
+
+#### Using npm package (Recommended)
+
+```json
+{
+  "mcp": {
+    "tsserver-mcp": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "npx",
+        "tsserver-mcp"
+      ]
+    }
+  }
+}
+```
+
+#### Using local installation
+
+```json
+{
+  "mcp": {
+    "tsserver-mcp": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "node",
+        "/path/to/tsserver-mcp/dist/index.js"
+      ]
+    }
+  }
+}
+```
+
 ## Tools
 
 ### `ts_definition`
@@ -69,48 +120,18 @@ Organize imports in a TypeScript file.
 **Parameters:**
 - `file`: Path to the TypeScript file
 
-## Installation
-
-```bash
-npm install
-npm run build
-```
-
-## Usage
-
-```bash
-npm start
-```
-
-## Development
-
-```bash
-npm run dev
-```
-
-### Adding to OpenCode Config
-
-Add this MCP to your OpenCode configuration:
-
-```json
-{
-  "mcp": {
-    "tsserver-mcp": {
-      "type": "local",
-      "enabled": true,
-      "command": [
-        "node",
-        "/path/to/tsserver-mcp/dist/index.js"
-      ]
-    }
-  }
-}
-```
-
-Make sure to run `npm run build` first to compile the TypeScript to the `dist/` directory.
-
 ## Requirements
 
 - Node.js 18+
 - TypeScript installed globally or in your project
-- tsserver available in PATH (usually installed with TypeScript)
+
+## Publishing
+
+To publish a new version:
+
+```bash
+npm version patch|minor|major
+npm publish
+```
+
+The `prepublishOnly` script will automatically run tests and build the project before publishing.

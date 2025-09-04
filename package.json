@@ -1,9 +1,18 @@
 {
   "name": "tsserver-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server that provides TypeScript language features using tsserver",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "bin": {
+    "tsserver-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
@@ -14,16 +23,29 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
     "mcp",
     "typescript",
     "tsserver",
-    "language-server"
+    "language-server",
+    "model-context-protocol",
+    "type-checking",
+    "code-completion",
+    "intellisense"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daliusd/tsserver-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/daliusd/tsserver-mcp/issues"
+  },
+  "homepage": "https://github.com/daliusd/tsserver-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
     "@types/node": "^20.0.0",

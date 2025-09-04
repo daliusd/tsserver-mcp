@@ -1,0 +1,57 @@
+# Source files
+src/
+tests/
+*.test.ts
+*.test.js
+
+# Development files
+.env
+.env.*
+config.json
+config.example.json
+
+# Build artifacts
+tsconfig.json
+vitest.config.ts
+eslint.config.js
+
+# Development tools
+.vscode/
+.idea/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Documentation
+TESTING.md
+DEBUG_LOGGING.md
+AGENTS.md
