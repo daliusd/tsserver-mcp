@@ -123,6 +123,7 @@ export class TSServerClient extends EventEmitter {
               preferences: {
                 includeCompletionsForModuleExports: true,
                 includeCompletionsWithInsertText: true,
+                maximumHoverLength: 1000000,
               },
             });
             this.logger.debug('TSServer initialization and configuration complete');
